@@ -118,7 +118,7 @@
 <div><label for="veiculo_equipamento">Veículo / Equipamento</label><input id="veiculo_equipamento" name="veiculo_equipamento" placeholder="Ex.: Caminhão servidor, CTA, plataforma"></div>
 </div></section>
 
-<section><h2>6. Referências pessoais</h2><h3>Referência 1</h3><div class="grid">
+<section><h2 id="titulo-referencias">6. Referências pessoais</h2><h3>Referência 1</h3><div class="grid">
 <div><label for="referencia_nome">Nome da referência 1</label><input id="referencia_nome" name="referencia_nome"></div>
 <div><label for="referencia_telefone">Telefone da referência 1</label><input id="referencia_telefone" name="referencia_telefone" maxlength="15" placeholder="(00) 00000-0000"></div>
 <div><label for="referencia_vinculo">Vínculo da referência 1</label><select id="referencia_vinculo" name="referencia_vinculo"><option value="">Selecione</option><option value="Família">Família</option><option value="Amigo">Amigo</option><option value="Trabalho">Trabalho</option><option value="Outros">Outros</option></select></div>
@@ -128,7 +128,7 @@
 <div><label for="referencia2_vinculo">Vínculo da referência 2</label><select id="referencia2_vinculo" name="referencia2_vinculo"><option value="">Selecione</option><option value="Família">Família</option><option value="Amigo">Amigo</option><option value="Trabalho">Trabalho</option><option value="Outros">Outros</option></select></div>
 </div></section>
 
-<section><h2>7. Anexar documentos</h2>
+<section><h2 id="titulo-anexos">7. Anexar documentos</h2>
 <div class="file-warning">
   Agora você pode anexar os documentos aqui. Ao clicar em <strong>Gerar arquivo para envio</strong>, os anexos serão incluídos no arquivo gerado pela ficha.
   <br><br>
@@ -154,7 +154,7 @@
   Essa opção ainda exige que todos os documentos obrigatórios da ficha sejam selecionados para conferência, mas gera um arquivo menor, contendo apenas a lista dos anexos. Depois, envie os documentos separadamente junto com a ficha.
 </div></section>
 
-<section><h2>8. Declaração final</h2><label><input type="checkbox" id="declaracao_veracidade" name="declaracao_veracidade" style="width:auto;margin-right:8px">Declaro que as informações fornecidas conferem com meus documentos oficiais.</label></section>
+<section><h2 id="titulo-declaracao">8. Declaração final</h2><label><input type="checkbox" id="declaracao_veracidade" name="declaracao_veracidade" style="width:auto;margin-right:8px">Declaro que as informações fornecidas conferem com meus documentos oficiais.</label></section>
 <section id="resultado" class="hidden"><h2>Revisão do arquivo gerado</h2><p class="ok">Arquivo pronto para envio.</p><div class="review" id="preview"></div></section>
 </form>
 </main>
@@ -179,7 +179,7 @@ function maskCEP(v){const d=apenasDigitos(v).slice(0,8);return d.length>5?d.slic
 function maskTelefone(v){const d=apenasDigitos(v).slice(0,11);if(d.length<=2)return d;if(d.length<=6)return"("+d.slice(0,2)+") "+d.slice(2);if(d.length<=10)return"("+d.slice(0,2)+") "+d.slice(2,6)+"-"+d.slice(6);return"("+d.slice(0,2)+") "+d.slice(2,7)+"-"+d.slice(7)}
 function maskData(v){const d=apenasDigitos(v).slice(0,8);if(d.length<=2)return d;if(d.length<=4)return d.slice(0,2)+"/"+d.slice(2);return d.slice(0,2)+"/"+d.slice(2,4)+"/"+d.slice(4)}
 function aplicarMascaras(){["cpf"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",e=>e.target.value=maskCPF(e.target.value));});["cep"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",e=>{if(ehBrasil(document.getElementById("pais_endereco")?.value||"Brasil"))e.target.value=maskCEP(e.target.value);});});["telefone_celular_1","telefone_celular_2","referencia_telefone","referencia2_telefone"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",e=>{e.target.value=telefoneUsaMascaraBrasil()?maskTelefone(e.target.value):e.target.value.slice(0,15);});});["data_nascimento","data_inicio_visita","data_final_visita","validade_cnh"].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener("input",e=>e.target.value=maskData(e.target.value));});}
-function atualizarTipo(){const tipo=document.getElementById("tipo_credencial").value;const permanente=tipo==="Permanente";document.getElementById("sec-permanente").classList.toggle("hidden",!permanente);document.getElementById("sec-cnh").classList.toggle("hidden",!permanente);document.getElementById("sec-anexos-permanente").classList.toggle("hidden",!permanente)}
+function atualizarTipo(){const tipo=document.getElementById("tipo_credencial").value;const permanente=tipo==="Permanente";document.getElementById("sec-permanente").classList.toggle("hidden",!permanente);document.getElementById("sec-cnh").classList.toggle("hidden",!permanente);document.getElementById("sec-anexos-permanente").classList.toggle("hidden",!permanente);const tRef=document.getElementById("titulo-referencias");const tAnx=document.getElementById("titulo-anexos");const tDec=document.getElementById("titulo-declaracao");if(tRef)tRef.textContent=(permanente?"6. ":"4. ")+"Referências pessoais";if(tAnx)tAnx.textContent=(permanente?"7. ":"5. ")+"Anexar documentos";if(tDec)tDec.textContent=(permanente?"8. ":"6. ")+"Declaração final"}
 function coletarDados(){const dados={};document.querySelectorAll("input, select, textarea").forEach(el=>{if(el.type==="file"){return}else if(el.type==="checkbox"){dados[el.name||el.id]=el.checked}else if(el.name){dados[el.name]=(el.value||"").trim()}});return dados}
 
 const LIMITE_ARQUIVOS = {
