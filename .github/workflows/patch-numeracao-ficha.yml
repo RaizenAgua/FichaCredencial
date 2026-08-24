@@ -1,42 +1,61 @@
 name: Ajustar numeracao dinamica da ficha
 
 on:
-  push:
+  pull_request:
     branches: [main]
-    paths:
-      - '.github/workflows/patch-numeracao-ficha.yml'
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
       - name: Ajustar numeracao conforme tipo de credencial
         shell: python
         run: |
           from pathlib import Path
+
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
 
-          s = s.replace('<section><h2>6. Referências pessoais</h2>', '<section><h2 id="titulo-referencias">6. Referências pessoais</h2>')
-          s = s.replace('<section><h2>7. Anexar documentos</h2>', '<section><h2 id="titulo-anexos">7. Anexar documentos</h2>')
-          s = s.replace('<section><h2>8. Declaração final</h2>', '<section><h2 id="titulo-declaracao">8. Declaração final</h2>')
+          s = s.replace(
+              '<section><h2>6. Referências pessoais</h2>',
+              '<section><h2 id="titulo-referencias">6. Referências pessoais</h2>'
+          )
+          s = s.replace(
+              '<section><h2>7. Anexar documentos</h2>',
+              '<section><h2 id="titulo-anexos">7. Anexar documentos</h2>'
+          )
+          s = s.replace(
+              '<section><h2>8. Declaração final</h2>',
+              '<section><h2 id="titulo-declaracao">8. Declaração final</h2>'
+          )
 
           antigo = 'function atualizarTipo(){const tipo=document.getElementById("tipo_credencial").value;const permanente=tipo==="Permanente";document.getElementById("sec-permanente").classList.toggle("hidden",!permanente);document.getElementById("sec-cnh").classList.toggle("hidden",!permanente);document.getElementById("sec-anexos-permanente").classList.toggle("hidden",!permanente)}'
           novo = 'function atualizarTipo(){const tipo=document.getElementById("tipo_credencial").value;const permanente=tipo==="Permanente";document.getElementById("sec-permanente").classList.toggle("hidden",!permanente);document.getElementById("sec-cnh").classList.toggle("hidden",!permanente);document.getElementById("sec-anexos-permanente").classList.toggle("hidden",!permanente);const tRef=document.getElementById("titulo-referencias");const tAnx=document.getElementById("titulo-anexos");const tDec=document.getElementById("titulo-declaracao");if(tRef)tRef.textContent=(permanente?"6. ":"4. ")+"Referências pessoais";if(tAnx)tAnx.textContent=(permanente?"7. ":"5. ")+"Anexar documentos";if(tDec)tDec.textContent=(permanente?"8. ":"6. ")+"Declaração final"}'
-          if antigo not in s:
-              raise SystemExit('Função atualizarTipo esperada não encontrada')
-          s = s.replace(antigo, novo)
+
+          if antigo in s:
+              s = s.replace(antigo, novo, 1)
+          elif novo not in s:
+              raise SystemExit('Função atualizarTipo em formato inesperado')
+
           p.write_text(s, encoding='utf-8')
-      - name: Commit
+          Path('.trigger-numbering').unlink(missing_ok=True)
+
+      - name: Commit da atualização
         run: |
+          if git diff --quiet; then
+            echo "Nenhuma alteração pendente."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add -A
           git commit -m "Ajusta numeração das etapas por tipo de credencial"
-          git push
-
-# trigger 2
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
