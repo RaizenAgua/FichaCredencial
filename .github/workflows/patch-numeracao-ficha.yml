@@ -38,3 +38,5 @@ jobs:
           git add index.html
           git commit -m "Ajusta numeração das etapas por tipo de credencial"
           git push
+
+# trigger 2
